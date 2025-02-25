@@ -1,0 +1,100 @@
+<div class="container mx-auto p-4">
+    <div class="flex flex-col md:flex-row gap-4">
+      <!-- Tickets List -->
+      <div class="w-full md:w-1/3">
+        <h3 class="text-xl font-bold mb-4">List of tickets</h3>
+        <div class="space-y-2" data-cy="tiles">
+          @if (queryService.isLoading()) {
+            <div class="p-4 bg-gray-100 rounded animate-pulse">
+              Loading tickets...
+            </div>
+          } @else if (queryService.tickets().length === 0) {
+            <div class="p-4 bg-gray-100 rounded">
+              No tickets found. Create your first ticket!
+            </div>
+          } @else {
+            @for (ticket of queryService.tickets(); track ticket.id) {
+              <a 
+                class="block p-3 rounded border hover:bg-gray-50 transition-colors"
+                [class.bg-blue-50]="queryService.currentTicket()?.id === ticket.id"
+                [routerLink]="['/tickets', ticket.id]"
+                routerLinkActive="border-blue-500"
+              >
+                <span class="font-semibold">{{ ticket.id }}</span>: {{ ticket.name }}
+              </a>
+            }
+          }
+        </div>
+      </div>
+  
+      <!-- Ticket Form -->
+      <div class="w-full md:w-2/3 p-4 border rounded">
+        <form autocomplete="off">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <!-- ID Field -->
+            <div>
+              <label class="block text-sm font-medium mb-1">ID</label>
+              <input
+                readonly
+                class="w-full p-2 border rounded text-center bg-gray-50"
+                name="id"
+                [value]="queryService.currentTicket()?.id ?? ''"
+              />
+            </div>
+            
+            <!-- Name Field -->
+            <div class="md:col-span-2">
+              <label class="block text-sm font-medium mb-1">Name</label>
+              <input
+                class="w-full p-2 border rounded"
+                name="name"
+                [value]="queryService.currentTicket()?.name ?? ''"
+                (input)="queryService._currentTicket.update(ticket => ticket ? {...ticket, name: $event.target.value} : null)"
+                #ticketNameInput
+              />
+            </div>
+          </div>
+          
+          <!-- Action Buttons -->
+          <div class="flex gap-2">
+            <button
+              type="button"
+              class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded transition-colors"
+              (click)="newTicket()"
+              data-cy="button-new"
+            >
+              New
+            </button>
+            
+            <button
+              type="button"
+              class="px-4 py-2 bg-blue-500 text-white hover:bg-blue-600 rounded transition-colors"
+              (click)="saveTicket()"
+              data-cy="button-save"
+              [disabled]="queryService.isSaving()"
+            >
+              @if (queryService.isSaving()) {
+                <span>Saving...</span>
+              } @else {
+                <span>Save</span>
+              }
+            </button>
+            
+            <button
+              type="button"
+              class="px-4 py-2 bg-red-500 text-white hover:bg-red-600 rounded transition-colors"
+              (click)="deleteTicket()"
+              data-cy="button-delete"
+              [disabled]="queryService.isDeleting() || !queryService.currentTicket()?.id"
+            >
+              @if (queryService.isDeleting()) {
+                <span>Deleting...</span>
+              } @else {
+                <span>Delete</span>
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
